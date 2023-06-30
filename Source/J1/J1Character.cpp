@@ -27,21 +27,21 @@ AJ1Character::AJ1Character()
 		GetMesh()->SetSkeletalMesh(MeshResource.Object);
 
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0, 0, -88), FRotator(0, -90, 0));
-
+	 
 	// Pawn
-	bUseControllerRotationYaw = false;
+	bUseControllerRotationYaw = true;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 
 	// SpringArm
 	SpringArm->SetRelativeRotation(FRotator(-30, 0, 0));
 	SpringArm->TargetArmLength = 700;
 	SpringArm->bUsePawnControlRotation = true;
-	SpringArm->bInheritPitch = false;
+	SpringArm->bInheritPitch = true;
 	SpringArm->bInheritYaw = true;
-	SpringArm->bInheritRoll = false;
+	SpringArm->bInheritRoll = true;
 
 	// Input
-	/*ConstructorHelpers::FObjectFinder<UInputMappingContext> MappingContext(TEXT("/Script/EnhancedInput.InputMappingContext'/Game/Input/IMC_Default.IMC_Default'"));
+	ConstructorHelpers::FObjectFinder<UInputMappingContext> MappingContext(TEXT("/Script/EnhancedInput.InputMappingContext'/Game/Input/IMC_Default.IMC_Default'"));
 	if (MappingContext.Succeeded())
 		InputMappingContext = MappingContext.Object;
 
@@ -51,7 +51,12 @@ AJ1Character::AJ1Character()
 
 	ConstructorHelpers::FObjectFinder<UInputAction> TurnAsset(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/IA_Turn.IA_Turn'"));
 	if (TurnAsset.Succeeded())
-		TurnAction = TurnAsset.Object;*/
+		TurnAction = TurnAsset.Object;
+
+	ConstructorHelpers::FObjectFinder<UInputAction> LookUpAsset(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/IA_LookUp.IA_LookUp'"));
+	if (LookUpAsset.Succeeded())
+		LookUpAction = LookUpAsset.Object;
+
 }
 
 // Called when the game starts or when spawned
@@ -60,7 +65,7 @@ void AJ1Character::BeginPlay()
 	Super::BeginPlay();
 
 	// EnhancedInput
-	/*APlayerController* PlayerController = Cast<APlayerController>(Controller);
+	APlayerController* PlayerController = Cast<APlayerController>(Controller);
 	if (PlayerController)
 	{
 		auto* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer());
@@ -68,7 +73,7 @@ void AJ1Character::BeginPlay()
 		{
 			Subsystem->AddMappingContext(InputMappingContext, 0);
 		}
-	}*/
+	}
 }
 
 // Called every frame
@@ -88,30 +93,72 @@ void AJ1Character::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	//PlayerInputComponent->BindAxis("MoveRight", this, &AR1Player::MoveRight);
 	//PlayerInputComponent->BindAxis("Turn", this, &AR1Player::MoveTurn);
 
-	/*if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
+	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AJ1Character::IA_Move);
 		EnhancedInputComponent->BindAction(TurnAction, ETriggerEvent::Triggered, this, &AJ1Character::IA_Turn);
-	}*/
+		EnhancedInputComponent->BindAction(LookUpAction, ETriggerEvent::Triggered, this, &AJ1Character::IA_LookUp);
+	}
 }
 
 void AJ1Character::IA_Move(const FInputActionValue& Value)
 {
+	FVector2D MovementVector = Value.Get<FVector2D>();
+
+	MovementHorizontalOffset = MovementVector.Y;
+	if (MovementVector.X != 0)
+	{
+		FRotator Rotator = GetControlRotation();
+		FVector Direction = UKismetMathLibrary::GetForwardVector(FRotator(0, Rotator.Yaw, 0));
+		AddMovementInput(Direction, MovementVector.X);
+	}
+	
+	MovementVerticalOffset = MovementVector.X;
+	if (MovementVector.Y != 0)
+	{
+		FRotator Rotator = GetControlRotation();
+		FVector Direction = UKismetMathLibrary::GetRightVector(FRotator(0, Rotator.Yaw, 0));
+		AddMovementInput(Direction, MovementVector.Y);
+	}
 }
 
 void AJ1Character::IA_Turn(const FInputActionValue& Value)
 {
+	float Val = Value.Get<float>();
+	AddControllerYawInput(Val);
+}
+
+void AJ1Character::IA_LookUp(const FInputActionValue& Value)
+{
+	float Val = Value.Get<float>();
+	AddControllerPitchInput(Val);
 }
 
 void AJ1Character::MoveForward(float Value)
 {
+	FRotator Rotator = GetControlRotation();
+	FVector Direction = UKismetMathLibrary::GetForwardVector(FRotator(0, Rotator.Yaw, 0));
+	AddMovementInput(Direction, Value);
 }
 
 void AJ1Character::MoveRight(float Value)
 {
+	FRotator Rotator = GetControlRotation();
+	FVector Direction = UKismetMathLibrary::GetRightVector(FRotator(0, Rotator.Yaw, 0));
+	AddMovementInput(Direction, Value);
 }
 
 void AJ1Character::MoveTurn(float Value)
 {
+	AddControllerYawInput(Value);
 }
 
+float AJ1Character::GetMovementHorizontalOffset()
+{
+	return MovementHorizontalOffset;
+}
+
+float AJ1Character::GetMovementVerticalOffset()
+{
+	return MovementVerticalOffset;
+}

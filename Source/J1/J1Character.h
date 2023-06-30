@@ -34,6 +34,9 @@ protected:
 	UFUNCTION()
 	void IA_Turn(const FInputActionValue& Value);
 
+	UFUNCTION()
+	void IA_LookUp(const FInputActionValue& Value);
+
 public:
 	UFUNCTION(BlueprintCallable, Category = Test)
 	void FireTest() { }
@@ -47,12 +50,24 @@ public:
 	UFUNCTION()
 	void MoveTurn(float Value);
 
+	UFUNCTION(BlueprintCallable, Category = Anim)
+	float GetMovementHorizontalOffset();
+
+	UFUNCTION(BlueprintCallable, Category = Anim)
+	float GetMovementVerticalOffset();
+
 protected:
 	UPROPERTY(VisibleAnywhere)
 	class USpringArmComponent* SpringArm;
 
 	UPROPERTY(VisibleAnywhere)
 	class UCameraComponent* Camera;
+
+	UPROPERTY(VisibleAnywhere)
+	float MovementHorizontalOffset;
+
+	UPROPERTY(VisibleAnywhere)
+	float MovementVerticalOffset;
 
 private:
 	UPROPERTY(EditAnywhere, Category = Input)
@@ -63,4 +78,7 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = Input)
 	class UInputAction* TurnAction;
+
+	UPROPERTY(EditAnywhere, Category = Input)
+	class UInputAction* LookUpAction;
 };
