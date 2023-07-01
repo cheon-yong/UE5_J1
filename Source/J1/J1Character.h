@@ -32,10 +32,7 @@ protected:
 	void IA_Move(const FInputActionValue& Value);
 
 	UFUNCTION()
-	void IA_Turn(const FInputActionValue& Value);
-
-	UFUNCTION()
-	void IA_LookUp(const FInputActionValue& Value);
+	void IA_Look(const FInputActionValue& Value);
 
 public:
 	UFUNCTION(BlueprintCallable, Category = Test)
@@ -73,12 +70,12 @@ private:
 	UPROPERTY(EditAnywhere, Category = Input)
 	class UInputMappingContext* InputMappingContext;
 
-	UPROPERTY(EditAnywhere, Category = Input)
+	UPROPERTY(EditAnywhere, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* MoveAction;
 
-	UPROPERTY(EditAnywhere, Category = Input)
-	class UInputAction* TurnAction;
+	UPROPERTY(EditAnywhere, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* LookAction;
 
-	UPROPERTY(EditAnywhere, Category = Input)
-	class UInputAction* LookUpAction;
+	UPROPERTY(EditAnywhere, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* JumpAction;
 };
